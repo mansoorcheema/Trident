@@ -28,7 +28,7 @@ It takes a trained neural network from **PyTorch**, **ONNX**, or **Tensorflow**,
 
 Workstation grade inference engines like TensorRT and ONNX Runtime are designed for large-scale workloads and server deployments. They excel in the data center but bring significant baggage to edge devices, mobile platforms, and developer workflows.
 
-On the other hand, Edge runtimes like TensorFlow Lite, CoreML, ExecuTorch are lean, but running a large multimodal model on them is still a fight — limited operator coverage, rigid conversion pipelines, and CPU Fallbacks.
+On the other hand, Edge Inference frameworks like TensorFlow Lite, CoreML, ExecuTorch are lean, but running a large multimodal model on them is still a fight — limited operator coverage, rigid conversion pipelines, and CPU Fallbacks.
 
  **No dependency fights, no boilerplate — just drop it in and get inference running in three lines, directly from the vast ecosystem of pre-trained models.**
  
