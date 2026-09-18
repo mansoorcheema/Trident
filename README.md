@@ -24,20 +24,21 @@
 It takes a trained neural network from **PyTorch**, **ONNX**, or **Tensorflow**, compiles it into a portable intermediate representation (IR), and executes it using parallelized **CPU** and **Vulkan** compute kernels.
 
 
-## Why another inference runtime?
+## Why Trident?
 
 Workstation grade inference engines like TensorRT and ONNX Runtime are designed for large-scale workloads and server deployments. They excel in the data center but bring significant baggage to edge devices, mobile platforms, and developer workflows.
 
- **No dependency fights, no boilerplate, just drop it in and get inference running in three lines.**
- 
+On the other hand, Edge runtimes like TensorFlow Lite, CoreML, ExecuTorch are lean, but running a large multimodal model on them is still a fight — limited operator coverage, rigid conversion pipelines, and CPU Fallbacks.
 
+ **No dependency fights, no boilerplate — just drop it in and get inference running in three lines, directly from the vast ecosystem of pre-trained models.**
+ 
 
 
 ## Features
 
 - **Built for edge AI** – Brings multi-billion parameter models to Edge, matching or exceeding performance of ONNX in edge benchmarks.
-- **Multi‑framework input** – import trained models directly from PyTorch, ONNX, and Tensorflow.
-- **Hardware‑tuned kernels** – optimized for ARM NEON and Intel AVX2; register‑blocked, L1‑cache optimized; every kernel measured against hardware limits.
+- **Multi‑framework input** – import trained models directly from PyTorch, ONNX, and Tensorflow. No conversion or preprocessing pipelines. 
+- **Hardware‑tuned kernels** – optimized for ARM NEON; register‑blocked, L1‑cache optimized; every kernel measured against hardware limits.
 - **End-to-end GPU execution** – Handwritten GPU kernels for Neural Network Layers, keeps the entire graph on GPU with no CPU round trips or silent fallbacks.
 - **Vulkan‑based GPU acceleration** –  runs on the GPUs edge hardware actually ships with: Adreno (Snapdragon), Mali (ARM), Intel, NVIDIA, and AMD.
 - **Lightweight** – No TensorFlow runtime. No PyTorch runtime. No ONNX Runtime. No oneDNN, Eigen, or BLAS. Just a small C++ library, FlatBuffers, and Vulkan SDK headers.
@@ -50,6 +51,60 @@ Workstation grade inference engines like TensorRT and ONNX Runtime are designed 
 
 
 [//]: # (- **Vendor‑agnostic backends** – runs the same model on **CPU** and **Vulkan**, with **CUDA** support in development.)
+
+
+
+## Quick Start
+
+### Installation
+```bash
+# Clone and build
+git clone https://github.com/mansoorcheema/trident-sdk.git
+cd trident-sdk
+cmake --preset release
+cmake --build --preset release
+
+# Python bindings
+pip install trident-sdk  # local wheel
+
+```
+
+[//]: # (### From PyPI &#40;Python only&#41;)
+
+[//]: # ()
+[//]: # (```bash)
+
+[//]: # (pip install trident-sdk)
+
+[//]: # ()
+[//]: # (```)
+### Run Inference
+
+#### Python
+```python
+import trident as tri
+import numpy as np
+
+rt = tri.Runtime(backend="vulkan")
+model = rt.load("model.trident")
+
+input_ids = np.random.randint(0, 30000, (1, 512)).astype(np.float32)
+output = model.run(input_ids)
+```
+
+#### C++ 23
+```C++
+#include <trident/trident.hpp>
+#include <vector>
+
+auto ctx = trident::create_context(trident::Backend::Vulkan);
+auto model = trident::model::load(*ctx, "model.trident");
+
+std::vector<float> input(512);
+std::vector<float> output(model->output_size());
+
+model->run(input, output);
+```
 
 
 ## Benchmarks
@@ -98,56 +153,3 @@ Numerics are checked against ORT fp32 on every run: worst relative error
 Clang -O3, with `OMP_WAIT_POLICY=active`
 for Trident and `session.intra_op.allow_spinning=1` for ORT. Both runtimes execute
 the same ONNX graph; Trident compiles it ahead of time with `-O`.*
-
-
-## Quick Start
-
-### Installation
-```bash
-# Clone and build
-git clone https://github.com/mansoorcheema/trident-sdk.git
-cd trident-sdk
-cmake --preset release
-cmake --build --preset release
-
-# Python bindings
-pip install trident  # local wheel
-
-```
-
-[//]: # (### From PyPI &#40;Python only&#41;)
-
-[//]: # ()
-[//]: # (```bash)
-
-[//]: # (pip install trident-sdk)
-
-[//]: # ()
-[//]: # (```)
-### Run Inference
-
-#### Python
-```python
-import trident as tri
-import numpy as np
-
-rt = tri.Runtime(backend="vulkan")
-model = rt.load("bert.trident")
-
-input_ids = np.random.randint(0, 30000, (1, 512)).astype(np.float32)
-output = model.run(input_ids)
-```
-
-#### C++ 23
-```C++
-#include <trident/trident.hpp>
-#include <vector>
-
-auto ctx = trident::create_context(trident::Backend::Vulkan);
-auto model = trident::model::load(*ctx, "bert.trident");
-
-std::vector<float> input(512);
-std::vector<float> output(model->output_size());
-
-model->run(input, output);
-```
