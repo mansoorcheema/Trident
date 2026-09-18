@@ -113,7 +113,7 @@ Prefill latency for a 16-token prompt, fp32, versus ONNX Runtime on the same
 machine and the same exported graph. Best of 15 runs (8 for Llama) after warm-up,
 profiling disabled.
 
-**SmolLM2-360M** 
+**SmolLM2-135M** 
 
 | Threads | Trident | ONNX Runtime | |
 |--------:|--------:|-------------:|:--|
